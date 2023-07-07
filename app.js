@@ -5,6 +5,6 @@ const placesRoutes = require("./routes/places-routes.js");
 
 const app = express();
 
-app.use(placesRoutes);
+app.use("/api/places", placesRoutes); // It will forward to placesRoutes and /api/places can be anything
 
 app.listen(8000);
