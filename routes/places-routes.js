@@ -16,14 +16,23 @@ const DUMMY_PLACES = [
   },
 ];
 
+// Places route
 // Register this route
 router.get("/:pid", (req, res, next) => {
   const placeId = req.params.pid; // { pid: 'p1' }
-  const places = DUMMY_PLACES.find((p) => {
+  const place = DUMMY_PLACES.find((p) => {
     return p.id === placeId;
   });
   console.log("GET Request in Places");
-  res.json({ places });
+  res.json({ place });
 });
 
+// User route
+router.get("/user/:uid", (req, res, next) => {
+  const userId = req.params.uid;
+  const place = DUMMY_PLACES.find((p) => {
+    return p.creator === userId;
+  });
+  res.json({ place });
+});
 module.exports = router;
