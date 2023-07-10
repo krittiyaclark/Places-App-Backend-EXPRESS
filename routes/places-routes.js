@@ -1,4 +1,5 @@
 const express = require("express");
+const HttpError = require("../models/http-error");
 
 const router = express.Router();
 
@@ -25,9 +26,7 @@ router.get("/:pid", (req, res, next) => {
   });
   // Handling Errors
   if (!place) {
-    const error = new Error("Could not finda place for the provided id.");
-    error.code = 404;
-    throw error;
+    throw new HttpError("Could not finda place for the provided id.", 404);
     // return res
     //   .status(404)
     //   .json({ message: "Could not finda place for the provided id." });
@@ -44,9 +43,9 @@ router.get("/user/:uid", (req, res, next) => {
   });
   // Handling Errors
   if (!place) {
-    const error = new Error("Could not finda place for the provided user id.");
-    error.code = 404;
-    return next(error);
+    return next(
+      HttpError("Could not finda place for the provided user id.", 404)
+    );
     //   return res
     //       .status(404)
     //       .json({ message: "Could not finda place for the provided user id." });
