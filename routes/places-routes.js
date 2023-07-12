@@ -1,5 +1,4 @@
 const express = require("express");
-const HttpError = require("../models/http-error");
 const placesConttrollers = require("../controllers/places-controller");
 
 const router = express.Router();
