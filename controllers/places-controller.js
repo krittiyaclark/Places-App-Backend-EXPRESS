@@ -52,12 +52,12 @@ const getUserById = (req, res, next) => {
 };
 
 const createPlace = (req, res, next) => {
-  const { title, description, coordiantes, address, creator } = req.body;
+  const { title, description, coordinates, address, creator } = req.body;
   const createddPlace = {
     id: uuid(),
     title,
     description,
-    location: coordiantes,
+    location: coordinates,
     address,
     creator,
   };
@@ -67,6 +67,27 @@ const createPlace = (req, res, next) => {
   res.status(201).json({ place: createPlace });
 };
 
+const updatePlace = (req, res, next) => {
+  const { title, description } = req.body;
+  const placeId = req.params.pid;
+
+  // Make a copy
+  const updatePlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
+  const placeIndex = { ...DUMMY_PLACES.findIndex((p) => p.id === placeId) };
+  updatePlace.title = title;
+  updatePlace.description = description;
+
+  // Set DUMMY_PLACES
+  DUMMY_PLACES[placeId] = updatePlace;
+
+  // Return
+  res.status(200).json({ place: updatePlace });
+};
+
+const deletePlace = (rea, res, next) => {};
+
 exports.getPlaceById = getPlaceById;
 exports.getUserById = getUserById;
 exports.createPlace = createPlace;
+exports.updatePlace = updatePlace;
+exports.deletePlace = deletePlace;
