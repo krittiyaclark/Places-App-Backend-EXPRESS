@@ -18,20 +18,20 @@ let DUMMY_PLACES = [
 // function getPlaceById() {...}
 // const getPlaceById = function() {...}
 
-const getPlaceById = (req, res, next) => {
+const getPlacesById = (req, res, next) => {
   const placeId = req.params.pid; // params is an express object { pid: 'p1' }
-  const place = DUMMY_PLACES.find((p) => {
+  const places = DUMMY_PLACES.filter((p) => {
     return p.id === placeId;
   });
   // Handling Errors
-  if (!place) {
-    throw new HttpError("Could not finda place for the provided id.", 404);
+  if (!places || places.length === 0) {
+    throw new HttpError("Could not finda places for the provided id.", 404);
     // return res
     //   .status(404)
     //   .json({ message: "Could not finda place for the provided id." });
   }
   console.log("GET Request in Places");
-  res.json({ place });
+  res.json({ places });
 };
 
 const getUserById = (req, res, next) => {
@@ -91,7 +91,7 @@ const deletePlace = (rea, res, next) => {
   req.status(200).json({ message: "Delate place" });
 };
 
-exports.getPlaceById = getPlaceById;
+exports.getPlacesById = getPlacesById;
 exports.getUserById = getUserById;
 exports.createPlace = createPlace;
 exports.updatePlace = updatePlace;
