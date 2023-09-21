@@ -20,7 +20,11 @@ router.post(
   placesConttrollers.createPlace
 );
 
-router.patch("/:pid", placesConttrollers.updatePlace);
+router.patch(
+  "/:pid",
+  [check("title").not().isEmpty(), check("decscription").isLength({ min: 5 })],
+  placesConttrollers.updatePlace
+);
 
 router.delete("/:pid", placesConttrollers.deletePlace);
 
