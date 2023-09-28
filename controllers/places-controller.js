@@ -2,6 +2,7 @@ const uuid = require("uuid");
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
+const Place = require("../models/place");
 
 let DUMMY_PLACES = [
   {
@@ -20,7 +21,7 @@ let DUMMY_PLACES = [
 // function getPlaceById() {...}
 // const getPlaceById = function() {...}
 
-const getPlacesById = (req, res, next) => {
+const getPlaceById = (req, res, next) => {
   const placeId = req.params.pid; // params is an express object { pid: 'p1' }
   const places = DUMMY_PLACES.filter((p) => {
     return p.id === placeId;
@@ -36,7 +37,7 @@ const getPlacesById = (req, res, next) => {
   res.json({ places });
 };
 
-const getUserById = (req, res, next) => {
+const getPlacesByUserId = (req, res, next) => {
   const userId = req.params.uid;
   const place = DUMMY_PLACES.find((p) => {
     return p.creator === userId;
@@ -56,6 +57,7 @@ const getUserById = (req, res, next) => {
 const createPlace = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log(errors);
     return next(
       new HttpError("invalida inputs passed, please check your data.", 422)
     );
@@ -69,16 +71,35 @@ const createPlace = async (req, res, next) => {
     return next(error);
   }
 
-  const createddPlace = {
-    id: uuid(),
+  // Properties need to be the same as placeSchema in models/place.js
+  const createPlace = new Place({
     title,
     description,
-    location: coordinates,
     address,
+    location: coordinates,
+    image:
+      "https://pixabay.com/photos/amsterdam-canal-netherlands-channel-1674530",
     creator,
-  };
+  });
 
-  DUMMY_PLACES.push(createddPlace); // Or unshift(createPlace)
+  // const createdPlace = {
+  //   id: uuid(),
+  //   title,
+  //   description,
+  //   location: coordinates,
+  //   address,
+  //   creator,
+  // };
+
+  // DUMMY_PLACES.push(createdPlace); // Or unshift(createPlace)
+  // Use save() from mongoose. save() is async.
+  try {
+    await createPlace.save();
+  } catch (err) {
+    const error = new HttpError("Creating place failed, please try agan.");
+    return next(error);
+  }
+
   // Send back to respond
   res.status(201).json({ place: createPlace });
 };
@@ -112,11 +133,11 @@ const deletePlace = (rea, res, next) => {
   }
   DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
 
-  req.status(200).json({ message: "Delate place" });
+  req.status(200).json({ message: "Deleteplace" });
 };
 
-exports.getPlacesById = getPlacesById;
-exports.getUserById = getUserById;
+exports.getPlaceById = getPlaceById;
+exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlace = updatePlace;
 exports.deletePlace = deletePlace;
