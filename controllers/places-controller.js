@@ -21,37 +21,62 @@ let DUMMY_PLACES = [
 // function getPlaceById() {...}
 // const getPlaceById = function() {...}
 
-const getPlaceById = (req, res, next) => {
+const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid; // params is an express object { pid: 'p1' }
-  const places = DUMMY_PLACES.filter((p) => {
-    return p.id === placeId;
-  });
+  // const places = DUMMY_PLACES.filter((p) => {
+  //   return p.id === placeId;
+  // });
+  let place;
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    // This error for GET request
+    const error = new HttpError(
+      "Something went wrong, could not find a place.",
+      500
+    );
+    return next(error);
+  }
   // Handling Errors
-  if (!places || places.length === 0) {
-    throw new HttpError("Could not finda places for the provided id.", 404);
+  // This error from the Database
+  if (!place) {
+    const error = new HttpError(
+      "Could not finda places for the provided id.",
+      404
+    );
+    return next(error);
     // return res
     //   .status(404)
     //   .json({ message: "Could not finda place for the provided id." });
   }
   console.log("GET Request in Places");
-  res.json({ places });
+  res.json({ place: place.toObject({ getters: true }) });
 };
 
-const getPlacesByUserId = (req, res, next) => {
+const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
-  const place = DUMMY_PLACES.find((p) => {
-    return p.creator === userId;
-  });
+  let places;
+  try {
+    places = await Place.find({ creator: userId });
+  } catch (err) {
+    const error = new HttpError(
+      "Fetching places failed, please try agan later. 500"
+    );
+    return next(error);
+  }
+
   // Handling Errors
-  if (!place) {
+  if (!places || places.length === 0) {
     return next(
-      HttpError("Could not find a place for the provided user id.", 404)
+      new HttpError("Could not find a place for the provided user id.", 404)
     );
     //   return res
     //       .status(404)
     //       .json({ message: "Could not finda place for the provided user id." });
   }
-  res.json({ place });
+  res.json({
+    places: places.map((place) => place.toObject({ getters: true })),
+  });
 };
 
 const createPlace = async (req, res, next) => {
