@@ -60,7 +60,8 @@ const getPlacesByUserId = async (req, res, next) => {
     places = await Place.find({ creator: userId });
   } catch (err) {
     const error = new HttpError(
-      "Fetching places failed, please try agan later. 500"
+      "Fetching places failed, please try agan later.",
+      500
     );
     return next(error);
   }
@@ -97,7 +98,7 @@ const createPlace = async (req, res, next) => {
   }
 
   // Properties need to be the same as placeSchema in models/place.js
-  const createPlace = new Place({
+  const createdPlace = new Place({
     title,
     description,
     address,
@@ -119,39 +120,59 @@ const createPlace = async (req, res, next) => {
   // DUMMY_PLACES.push(createdPlace); // Or unshift(createPlace)
   // Use save() from mongoose. save() is async.
   try {
-    await createPlace.save();
+    await createdPlace.save();
   } catch (err) {
-    const error = new HttpError("Creating place failed, please try agan.");
+    const error = new HttpError("Creating place failed, please try agan.", 500);
     return next(error);
   }
 
   // Send back to respond
-  res.status(201).json({ place: createPlace });
+  res.status(201).json({ place: createdPlace });
 };
 
-const updatePlace = (req, res, next) => {
-  const erroes = validationResult(req);
-  if (erroes.isEmpty()) {
+const updatePlace = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
     throw new HttpError("invalida inputs passed, please check your data.", 422);
   }
 
   const { title, description } = req.body;
   const placeId = req.params.pid;
 
+  let place;
+
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went went wrong. could not update place.",
+      500
+    );
+    return next(error);
+  }
+
   // Make a copy
-  const updatePlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
-  const placeIndex = { ...DUMMY_PLACES.findIndex((p) => p.id === placeId) };
-  updatePlace.title = title;
-  updatePlace.description = description;
+  // const updatePlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
+  // const placeIndex = { ...DUMMY_PLACES.findIndex((p) => p.id === placeId) };
+  place.title = title;
+  place.description = description;
 
   // Set DUMMY_PLACES
-  DUMMY_PLACES[placeIndex] = updatePlace;
-
+  // DUMMY_PLACES[placeIndex] = updatePlace;
+  try {
+    await place.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Something went went wrong. could not update place.",
+      500
+    );
+    return next(error);
+  }
   // Return
-  res.status(200).json({ place: updatePlace });
+  res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
-const deletePlace = (rea, res, next) => {
+const deletePlace = (req, res, next) => {
   const placeId = req.params.pid;
   if (!DUMMY_PLACES.find((p) => p.id === placeId)) {
     HttpError("Could not find a place for the provided user id.", 404);
